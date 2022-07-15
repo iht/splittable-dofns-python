@@ -74,13 +74,9 @@ next steps to install Kafka in a local minikube cluster.
 * Find out the local IP where Kafka is lesting, and take note of it:
   - `k get node minikube -o=jsonpath='{range .status.addresses[*]}{.type}{"\t"}{.address}{"\n"}'`
 
-[//]: # ( * Redirect the port for external access)
-
-[//]: # ( - `k port-forward service/my-cluster-kafka-external-bootstrap 50000:9094 --address='0.0.0.0' -n kafka`)
-
 For your Kafka clients configuration, the bootstrap server will be `IP:PORT`.
 
-# Topic creation and population
+## Topic creation and population
 
 To test your pipeline against Kafka, you will need to write some data to 
 Kafka. For that, the first step is to create a topic.
@@ -92,8 +88,9 @@ Find out your bootstrap server details, and create an environment variable:
 
 `export BOOTSTRAP=192.168.64.3:31457`
 
-(your details will be different, please use the IP of your minikube cluster 
-and the port of your Kafka service, see above for more details)
+(in this example the IP is `192.168.64.3` and the port is `31457`; your details 
+will be  different, please  use the IP of your minikube cluster and the  
+port of your Kafka service, see above for more details)
 
 To create the topic, run
 
@@ -107,3 +104,6 @@ If you want to check that the topic is working correctly, you can run a
 consumer and check if there is data:
 
 `./kafka_single_client.py --consumer --bootstrap $BOOTSTRAP`
+
+## Pipeline using Kafka
+

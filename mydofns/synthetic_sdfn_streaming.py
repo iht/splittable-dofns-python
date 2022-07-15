@@ -59,7 +59,7 @@ class MyPartitionRestrictionTracker(OffsetRestrictionTracker):
 
 
 class GeneratePartitionsDoFn(beam.DoFn, ABC):
-    NUM_PARTITIONS = 5
+    NUM_PARTITIONS = 4
     INITIAL_MAX_SIZE = 120
     MAX_INITIAL_COMMITTED = 20
 

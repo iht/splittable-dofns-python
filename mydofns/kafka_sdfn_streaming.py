@@ -2,15 +2,16 @@ import logging
 import sys
 import time
 import typing
-from typing import List, Optional, Iterable
+from typing import Optional
 
 import apache_beam as beam
 from apache_beam import RestrictionProvider
-from apache_beam.io.iobase import RestrictionTracker, RestrictionProgress
+from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
 from kafka import KafkaConsumer, TopicPartition
+from kafka.consumer.fetcher import ConsumerRecord
 
 from mydofns.synthetic_sdfn_streaming import MyPartitionRestrictionTracker
 
@@ -55,7 +56,7 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
                 partition: int,
                 tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
                 wm_estim=beam.DoFn.WatermarkEstimatorParam(WalltimeWatermarkEstimator.default_provider()),
-                **unused_kwargs) -> typing.Iterable[typing.Tuple[int, str]]:
+                **unused_kwargs) -> typing.Iterable[str]:
         if self._kafka_client is None:
             self._create_consumer(partition)
 
@@ -66,7 +67,8 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
             last_offset = self._kafka_client.end_offsets([tp])[tp]
             last_seen_offset = self._kafka_client.committed(tp)
             if offset_to_process != {}:
-                offset = offset_to_process[tp]
+                cr: ConsumerRecord = offset_to_process[tp].pop()
+                offset = cr.offset
 
                 if tracker.try_claim(offset):
                     msg = f"Partition: {partition}, offset: {offset}   Last: {last_offset}"

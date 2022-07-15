@@ -10,7 +10,7 @@ from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
-from kafka import KafkaConsumer, TopicPartition
+from kafka import KafkaConsumer, TopicPartition, OffsetAndMetadata
 from kafka.consumer.fetcher import ConsumerRecord
 
 from mydofns.synthetic_sdfn_streaming import MyPartitionRestrictionTracker
@@ -63,19 +63,21 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
         tp = TopicPartition(topic=self._topic, partition=partition)
 
         while True:
-            offset_to_process: typing.Dict = self._kafka_client.poll(1)
+            offset_to_process: typing.Dict = self._kafka_client.poll()
             last_offset = self._kafka_client.end_offsets([tp])[tp]
             last_seen_offset = self._kafka_client.committed(tp)
             if offset_to_process != {}:
-                cr: ConsumerRecord = offset_to_process[tp].pop()
-                offset = cr.offset
+                all_records: typing.List[ConsumerRecord] = offset_to_process[tp]
 
-                if tracker.try_claim(offset):
-                    msg = f"Partition: {partition}, offset: {offset}   Last: {last_offset}"
-                    yield msg
-                    self._kafka_client.commit(offset)
-                else:
-                    return
+                for record in all_records:
+                    offset = record.offset
+                    if tracker.try_claim(offset):
+                        msg = f"Partition: {partition}, offset: {offset}   Last: {last_offset}"
+                        yield msg
+                        offset_metadata = OffsetAndMetadata(offset, "")
+                        self._kafka_client.commit({tp: offset_metadata})
+                    else:
+                        return
             else:
                 logging.info(f" ** Partition {partition}: Empty (offset last: {last_offset}, initial: {last_seen_offset})")
                 time.sleep(self.POLL_TIMEOUT)
@@ -89,8 +91,8 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
 
         committed_offset = self._kafka_client.committed(TopicPartition(topic=self._topic, partition=partition))
         if committed_offset is None:
-            committed_offset = -1
-        return OffsetRange(committed_offset + 1, sys.maxsize)
+            committed_offset = 0
+        return OffsetRange(committed_offset, sys.maxsize)
 
     def restriction_size(self, element: int, restriction: OffsetRange):
         return restriction.size()

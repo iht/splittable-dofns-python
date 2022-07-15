@@ -19,7 +19,7 @@ def run_pipeline(topic: str, bootstrap_server: List[str], beam_options):
         ps: PCollection[int] = p | beam.Create([1]) | "Check partitions" >> beam.ParDo(
             ReadPartitionsDoFn(topic, bootstrap_server))
 
-        msgs = ps | "Read from Kafka" >> beam.ParDo(
+        msgs: PCollection[str] = ps | "Read from Kafka" >> beam.ParDo(
             ProcessKafkaPartitionsDoFn(topic, bootstrap_server))
 
         msgs | beam.Map(lambda x: logging.info(x))

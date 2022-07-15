@@ -10,6 +10,8 @@ DATA_FILE = 'data/sample.txt'
 TOPIC = "beam-topic"
 LIMIT = 100
 
+NUM_PARTITIONS = 4
+
 
 def main(bootstrap_server: str, data_file: str, topic: str, limit: int, consumer: bool, create: bool):
     if create:
@@ -25,13 +27,15 @@ def produce_messages(bootstrap_server: str, data_filename: str, topic_name: str,
     with open(data_filename, 'r') as f:
         k = 0
         for line in f:
-            future = producer.send(topic=topic_name, partition=k % 5, value=line.encode())
+            future = producer.send(topic=topic_name, partition=k % NUM_PARTITIONS, value=line.encode())
 
             k += 1
             if k % 5 == 0:
                 print(f"{k} msgs published")
             if k >= limit:
                 break
+
+        print(f"Total: {k} msgs published")
 
 
 def read_messages(bootstrap_server: str, topic_name: str):

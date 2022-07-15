@@ -107,3 +107,10 @@ consumer and check if there is data:
 
 ## Pipeline using Kafka
 
+The script used to publish data has created 4 partitions in the topic. So we 
+recommend running the Kafka pipeline with 4 workers
+
+`python my_streaming_kafka_pipeline.py --bootstrap $BOOTSTRAP --direct_num_workers 4`
+
+The code of the `DoFn` functions is located in 
+`mydofns/kafka_sdfn_streaming.py`.

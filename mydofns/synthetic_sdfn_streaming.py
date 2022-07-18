@@ -1,7 +1,6 @@
 import logging
 import random
 import sys
-import time
 from abc import ABC
 
 import apache_beam as beam
@@ -12,6 +11,7 @@ from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange, OffsetRestrictionTracker
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
+from apache_beam.utils.timestamp import Duration
 
 
 class MyPartition:
@@ -85,30 +85,30 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
                 wm_estim=beam.DoFn.WatermarkEstimatorParam(WalltimeWatermarkEstimator.default_provider()),
                 **unused_kwargs) -> typing.Iterable[typing.Tuple[int, str]]:
         n_times_empty = 0
-        while True:
-            offset_to_process = element.poll()
-            if offset_to_process is not None:
-                if tracker.try_claim(offset_to_process):
-                    msg = f"Processed: {offset_to_process}   Last: {element.size()}"
-                    yield element.id, msg
-                    element.commit()
-                else:
-                    return
 
-            # Code to add more messages to simulate real word scenarios
-            if offset_to_process is None:
-                logging.info(f" ** Partition {element.id}: Empty poll. Waiting")
-                n_times_empty += 1
+        offset_to_process = element.poll()
+        if offset_to_process is not None:
+            if tracker.try_claim(offset_to_process):
+                msg = f"Processed: {offset_to_process}   Last: {element.size()}"
+                yield element.id, msg
+                element.commit()
+            else:
+                return
 
-            if n_times_empty > self.MAX_EMPTY_POLLS:
-                logging.info(f" ** Partition {element.id}: Waiting for too long. Adding more messages")
-                self._add_new_messages(element)
-                n_times_empty = 0
-            elif random.random() <= self.PROB_NEW_MSGS:
-                logging.info(f" ** Partition {element.id}: Bingo! Adding more messages")
-                self._add_new_messages(element)
+        # Code to add more messages to simulate real word scenarios
+        if offset_to_process is None:
+            logging.info(f" ** Partition {element.id}: Empty poll. Waiting")
+            n_times_empty += 1
 
-            time.sleep(self.POLL_TIMEOUT)
+        if n_times_empty > self.MAX_EMPTY_POLLS:
+            logging.info(f" ** Partition {element.id}: Waiting for too long. Adding more messages")
+            self._add_new_messages(element)
+            n_times_empty = 0
+        elif random.random() <= self.PROB_NEW_MSGS:
+            logging.info(f" ** Partition {element.id}: Bingo! Adding more messages")
+            self._add_new_messages(element)
+
+        tracker.defer_remainder(Duration.of(self.POLL_TIMEOUT))
 
     def _add_new_messages(self, element: MyPartition):
         element.add_new_messages(random.randint(self.MIN_ADD_NEW_MSGS, self.MAX_ADD_NEW_MSGS))

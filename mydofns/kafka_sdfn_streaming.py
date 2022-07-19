@@ -10,6 +10,7 @@ from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
+from apache_beam.utils.timestamp import Duration
 from kafka import KafkaConsumer, TopicPartition, OffsetAndMetadata
 from kafka.consumer.fetcher import ConsumerRecord
 
@@ -40,16 +41,25 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
     def __init__(self, topic: str, bootstrap_server: str, *unused_args, **unused_kwargs):
         self._topic = topic
         self._bootstrap = bootstrap_server
-        self._kafka_client: Optional[KafkaConsumer] = None
+        self._kafka_clients: typing.Dict = {}
         super().__init__(*unused_args, **unused_kwargs)
 
-    def _create_consumer(self, partition):
+    def _create_and_get_consumer(self, partition):
         tp = TopicPartition(topic=self._topic, partition=partition)
-        self._kafka_client = KafkaConsumer(group_id='my-beam-consumer-group',
-                                           bootstrap_servers=[self._bootstrap],
-                                           auto_offset_reset='earliest',
-                                           enable_auto_commit=False)
-        self._kafka_client.assign([tp])
+
+        client = None
+
+        if tp in self._kafka_clients.keys():
+            client = self._kafka_clients[tp]
+        else:
+            client = KafkaConsumer(group_id='my-beam-consumer-group',
+                                   bootstrap_servers=[self._bootstrap],
+                                   auto_offset_reset='earliest',
+                                   enable_auto_commit=False)
+            client.assign([tp])
+            self._kafka_clients[tp] = client
+
+        return client
 
     @beam.DoFn.unbounded_per_element()
     def process(self,
@@ -57,39 +67,38 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
                 tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
                 wm_estim=beam.DoFn.WatermarkEstimatorParam(WalltimeWatermarkEstimator.default_provider()),
                 **unused_kwargs) -> typing.Iterable[str]:
-        if self._kafka_client is None:
-            self._create_consumer(partition)
+
+        kafka_client = self._create_and_get_consumer(partition)
 
         tp = TopicPartition(topic=self._topic, partition=partition)
 
-        while True:
-            offset_to_process: typing.Dict = self._kafka_client.poll()
-            last_offset = self._kafka_client.end_offsets([tp])[tp]
-            last_seen_offset = self._kafka_client.committed(tp)
-            if offset_to_process != {}:
-                all_records: typing.List[ConsumerRecord] = offset_to_process[tp]
+        offset_to_process: typing.Dict = kafka_client.poll()
+        last_offset = kafka_client.end_offsets([tp])[tp]
+        last_seen_offset = kafka_client.committed(tp)
+        if offset_to_process != {}:
+            all_records: typing.List[ConsumerRecord] = offset_to_process[tp]
 
-                for record in all_records:
-                    offset = record.offset
-                    if tracker.try_claim(offset):
-                        msg = f"Partition: {partition}, offset: {offset}   Last: {last_offset}"
-                        yield msg
-                        offset_metadata = OffsetAndMetadata(offset, "")
-                        self._kafka_client.commit({tp: offset_metadata})
-                    else:
-                        return
-            else:
-                logging.info(f" ** Partition {partition}: Empty (offset last: {last_offset}, initial: {last_seen_offset})")
-                time.sleep(self.POLL_TIMEOUT)
+            for record in all_records:
+                offset = record.offset
+                if tracker.try_claim(offset):
+                    msg = f"Partition: {partition}, offset: {offset}   Last: {last_offset}"
+                    yield msg
+                    offset_metadata = OffsetAndMetadata(offset, "")
+                    kafka_client.commit({tp: offset_metadata})
+                else:
+                    return
+        else:
+            logging.info(f" ** Partition {partition}: Empty (offset last: {last_offset}, initial: {last_seen_offset})")
+
+        tracker.defer_remainder(Duration.of(self.POLL_TIMEOUT))
 
     def create_tracker(self, restriction: OffsetRange) -> RestrictionTracker:
         return MyPartitionRestrictionTracker(restriction)
 
     def initial_restriction(self, partition: int) -> OffsetRange:
-        if self._kafka_client is None:
-            self._create_consumer(partition)
+        kafka_client = self._create_and_get_consumer(partition)
 
-        committed_offset = self._kafka_client.committed(TopicPartition(topic=self._topic, partition=partition))
+        committed_offset = kafka_client.committed(TopicPartition(topic=self._topic, partition=partition))
         if committed_offset is None:
             committed_offset = 0
         return OffsetRange(committed_offset, sys.maxsize)

@@ -88,7 +88,7 @@ def create_topic(bootstrap_server: str, topic_name: str):
         client_id='create-topic')
 
     topics = admin_client.list_topics()
-    topic = NewTopic(name=topic_name, num_partitions=5, replication_factor=1)
+    topic = NewTopic(name=topic_name, num_partitions=NUM_PARTITIONS, replication_factor=1)
     if topic_name in topics:
         print(f"Topic {topic_name} already exists, re-creating")
         admin_client.delete_topics(topics=[topic_name], timeout_ms=50000)

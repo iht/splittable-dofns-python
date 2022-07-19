@@ -38,7 +38,7 @@ To launch the batch pipeline, simply run
 `python my_streaming_synth_pipeline.py`
 
 In the file `mydofns/synthetic_sdfn_streaming.py`, in line 62, you can set 
-the number of partitions for this streaming synthetic connector. By default is `NUM_PARTITIONS = 4`.
+the number of partitions for this streaming synthetic connector. By default, it is `NUM_PARTITIONS = 4`.
 
 # Pipeline using Kafka
 

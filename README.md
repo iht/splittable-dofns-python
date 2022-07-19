@@ -33,21 +33,12 @@ using a splittable DoFn. The code of the `DoFn` is in
 
 ## Streaming pipeline
 
-
 To launch the batch pipeline, simply run 
 
-`python my_batch_streaming.py`
-
-Because this pipeline will read pseudo-partitions forever, without 
-interruption, you may want to run the pipeline with some parallelism. By 
-default, the direct runner will use only 1 worker, and will therefore read 
-only 1 partition.
+`python my_streaming_synth_pipeline.py`
 
 In the file `mydofns/synthetic_sdfn_streaming.py`, in line 62, you can set 
-the number of partitions. By default is `NUM_PARTITIONS = 4`, so the 
-recommendation is to run with 4 workers:
-
-`python my_batch_streaming.py --direct_num_workers 4`
+the number of partitions for this streaming synthetic connector. By default is `NUM_PARTITIONS = 4`.
 
 # Pipeline using Kafka
 
@@ -107,10 +98,10 @@ consumer and check if there is data:
 
 ## Pipeline using Kafka
 
-The script used to publish data has created 4 partitions in the topic. So we 
-recommend running the Kafka pipeline with 4 workers
+To run the pipeline, use this script. The number of partitions is by default 4. Make sure that if you change the
+number of partitions in `kafka_single_client.py`, you change it/use the same value in the Kafka `DoFn` too
 
-`python my_streaming_kafka_pipeline.py --bootstrap $BOOTSTRAP --direct_num_workers 4`
+`python my_streaming_kafka_pipeline.py --bootstrap $BOOTSTRAP `
 
 The code of the `DoFn` functions is located in 
 `mydofns/kafka_sdfn_streaming.py`.

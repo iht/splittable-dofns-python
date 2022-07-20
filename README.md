@@ -9,6 +9,8 @@ There are two branches in this repo:
 * `main`: template to follow the workshop; write your code here.
 * `solution`: full solutions provided in this branch. Check only after you have tried to write your own code.
 
+The slides used during the workshop are available [here](docs/slides.pdf).
+
 # Dependencies
 
 Check the `requirements.txt` file and install those dependencies before 

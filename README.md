@@ -5,6 +5,10 @@ This repository contains the code samples used for the workshop "Splittable
 DoFns in Python" of the Beam Summit 2022:
 * https://2022.beamsummit.org/sessions/splittable-dofns-in-python/
 
+There are two branches in this repo:
+* `main`: template to follow the workshop; write your code here.
+* `solution`: full solutions provided in this branch. Check only after you have tried to write your own code.
+
 The slides used during the workshop are available [here](docs/slides.pdf).
 
 # Dependencies
@@ -12,7 +16,7 @@ The slides used during the workshop are available [here](docs/slides.pdf).
 Check the `requirements.txt` file and install those dependencies before 
 trying to run the examples in this repo.
 
-You will need Python 3.10 or 3.11. Other versions of Python might not work.
+You will need Python 3.10, 3.11, 3.12, or 3.13.
 
 If you want to use Kafka as well as the synthetic pipelines, you will need 
 to install minikube, or alternatively, provide a Kafka server of your own. 
@@ -33,6 +37,8 @@ The pipeline generates some pseudo-files, and reads the files by chunks
 using a splittable DoFn. The code of the `DoFn` is in 
 `mydofns/synthetic_sdfn_batch.py`.
 
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
+
 ## Streaming pipeline
 
 To launch the batch pipeline, simply run 
@@ -41,6 +47,8 @@ To launch the batch pipeline, simply run
 
 In the file `mydofns/synthetic_sdfn_streaming.py`, in line 62, you can set 
 the number of partitions for this streaming synthetic connector. By default, it is `NUM_PARTITIONS = 4`.
+
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
 
 # Pipeline using Kafka
 
@@ -51,7 +59,6 @@ the next section you have instructions to run Kafka locally with minikube.
 
 If you want to test your code against an actual Kafka server, follow the 
 next steps to install Kafka in a local minikube cluster.
-
 
 * Install minikube: https://minikube.sigs.k8s.io/docs/start/
 * Make sure that you have an alias 
@@ -107,3 +114,5 @@ number of partitions in `kafka_single_client.py`, you change it/use the same val
 
 The code of the `DoFn` functions is located in 
 `mydofns/kafka_sdfn_streaming.py`.
+
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.

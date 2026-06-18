@@ -34,6 +34,7 @@ class ReadPartitionsDoFn(beam.DoFn):
         )
 
     def process(self, element, *args, **kwargs):
+        assert self._kafka_client is not None
         partitions = self._kafka_client.partitions_for_topic(self._topic)
         for partition in partitions:
             yield partition

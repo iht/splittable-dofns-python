@@ -8,7 +8,7 @@ This repository contains the code samples and exercises used for the workshop **
 
 ## 🎥 Resources
 
-*   **Workshop Recording:** [Watch on YouTube](https://www.youtube.com/watch?v=kS5Fp82N-2k)
+*   **Workshop Recording:** [Watch on YouTube](https://www.youtube.com/watch?v=VQdtaaWxN0Y)
 *   **Presentation Slides:** [Download Slides (PDF)](docs/slides.pdf)
 *   **Official Session Page:** [Beam Summit 2022 Session](https://2022.beamsummit.org/sessions/splittable-dofns-in-python/)
 

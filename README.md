@@ -16,7 +16,7 @@ The slides used during the workshop are available [here](docs/slides.pdf).
 Check the `requirements.txt` file and install those dependencies before 
 trying to run the examples in this repo.
 
-You will need Python 3.10 or 3.11. Other versions of Python might not work.
+You will need Python 3.10, 3.11, 3.12, or 3.13.
 
 If you want to use Kafka as well as the synthetic pipelines, you will need 
 to install minikube, or alternatively, provide a Kafka server of your own. 
@@ -37,7 +37,7 @@ The pipeline generates some pseudo-files, and reads the files by chunks
 using a splittable DoFn. The code of the `DoFn` is in 
 `mydofns/synthetic_sdfn_batch.py`.
 
-**You need to write your solution for that splittable DoFn in that file**.
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
 
 ## Streaming pipeline
 
@@ -48,7 +48,7 @@ To launch the batch pipeline, simply run
 In the file `mydofns/synthetic_sdfn_streaming.py`, in line 62, you can set 
 the number of partitions for this streaming synthetic connector. By default, it is `NUM_PARTITIONS = 4`.
 
-**You need to write your solution for that splittable DoFn in that file**.
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
 
 # Pipeline using Kafka
 
@@ -115,4 +115,4 @@ number of partitions in `kafka_single_client.py`, you change it/use the same val
 The code of the `DoFn` functions is located in 
 `mydofns/kafka_sdfn_streaming.py`.
 
-**You need to write your solution for that splittable DoFn in that file**.
+If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.

@@ -27,7 +27,7 @@ def produce_messages(bootstrap_server: str, data_filename: str, topic_name: str,
     with open(data_filename, 'r') as f:
         k = 0
         for line in f:
-            future = producer.send(topic=topic_name, partition=k % NUM_PARTITIONS, value=line.encode())
+            producer.send(topic=topic_name, partition=k % NUM_PARTITIONS, value=line.encode())
 
             k += 1
             if k % 5 == 0:

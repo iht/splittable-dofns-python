@@ -23,7 +23,7 @@ class MyPartition:
     def poll(self) -> typing.Optional[int]:
         offset = self._committed_offset + 1
         if offset > self._last_offset:
-            return
+            return None
 
         return offset
 
@@ -66,9 +66,11 @@ class GeneratePartitionsDoFn(beam.DoFn, ABC):
     def process(self, ignored_element, *args, **kwargs):
         for k in range(self.NUM_PARTITIONS):
             committed_offset = random.randint(0, self.MAX_INITIAL_COMMITTED)
-            yield MyPartition(id=k,
-                              last_offset=random.randint(committed_offset, self.INITIAL_MAX_SIZE),
-                              committed_offset=committed_offset)
+            yield MyPartition(
+                id=k,
+                last_offset=random.randint(committed_offset, self.INITIAL_MAX_SIZE),
+                committed_offset=committed_offset,
+            )
 
 
 class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
@@ -79,11 +81,15 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
     MAX_EMPTY_POLLS = 10
 
     @beam.DoFn.unbounded_per_element()
-    def process(self,
-                element: MyPartition,
-                tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
-                wm_estim=beam.DoFn.WatermarkEstimatorParam(WalltimeWatermarkEstimator.default_provider()),
-                **unused_kwargs) -> typing.Iterable[typing.Tuple[int, str]]:
+    def process(
+        self,
+        element: MyPartition,
+        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),  # type: ignore[assignment]
+        wm_estim=beam.DoFn.WatermarkEstimatorParam(
+            WalltimeWatermarkEstimator.default_provider()
+        ),
+        **unused_kwargs,
+    ) -> typing.Iterable[typing.Tuple[int, str]]:
         n_times_empty = 0
 
         offset_to_process = element.poll()
@@ -101,7 +107,9 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
             n_times_empty += 1
 
         if n_times_empty > self.MAX_EMPTY_POLLS:
-            logging.info(f" ** Partition {element.id}: Waiting for too long. Adding more messages")
+            logging.info(
+                f" ** Partition {element.id}: Waiting for too long. Adding more messages"
+            )
             self._add_new_messages(element)
             n_times_empty = 0
         elif random.random() <= self.PROB_NEW_MSGS:
@@ -111,7 +119,9 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
         tracker.defer_remainder(Duration.of(self.POLL_TIMEOUT))
 
     def _add_new_messages(self, element: MyPartition):
-        element.add_new_messages(random.randint(self.MIN_ADD_NEW_MSGS, self.MAX_ADD_NEW_MSGS))
+        element.add_new_messages(
+            random.randint(self.MIN_ADD_NEW_MSGS, self.MAX_ADD_NEW_MSGS)
+        )
 
     def create_tracker(self, restriction: OffsetRange) -> RestrictionTracker:
         return MyPartitionRestrictionTracker(restriction)

@@ -69,7 +69,7 @@ class GeneratePartitionsDoFn(beam.DoFn):
     INITIAL_MAX_SIZE = 120
     MAX_INITIAL_COMMITTED = 20
 
-    def process(self, ignored_element, *args, **kwargs) -> typing.Iterable[MyPartition]:
+    def process(self, element, *args, **kwargs) -> typing.Iterable[MyPartition]:
         # TODO
         # Calculate a random latest committed offset, between 0 and MAX_INITIAL_COMMITTED.
         # Then emit NUM_PARTIIONS partitions, with the last offset between the above number and INITIAL_MAX_SIZE

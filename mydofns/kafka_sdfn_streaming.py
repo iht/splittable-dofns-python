@@ -32,7 +32,7 @@ class ReadPartitionsDoFn(beam.DoFn):
             bootstrap_servers=[self._bootstrap],
         )
 
-    def process(self, unused_element: int, *args, **kwargs) -> typing.Iterable[int]:
+    def process(self, element: int, *args, **kwargs) -> typing.Iterable[int]:
         # TODO: return the ids of the partitions contained in this topic
         raise NotImplementedError()
 

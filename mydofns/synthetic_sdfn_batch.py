@@ -17,7 +17,7 @@ class GenerateFilesDoFn(beam.DoFn):
     MAX_FILE_SIZE = 30
     MIN_FILE_SIZE = 2
 
-    def process(self, ignored_element, *args, **kwargs) -> typing.Iterable[MyFile]:
+    def process(self, element, *args, **kwargs) -> typing.Iterable[MyFile]:
         # TODO: create NUM_FILES of random size between MIN_FILE_SIZE and MAX_FILE_SIZE
         raise NotImplementedError()
 

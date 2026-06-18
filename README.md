@@ -1,118 +1,121 @@
+# Splittable DoFns in Python: A Hands-On Workshop
 
-# Splittable DoFns in Python
+[![Python Versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
+[![Apache Beam](https://img.shields.io/badge/apache--beam-latest-orange)](https://beam.apache.org/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This repository contains the code samples used for the workshop "Splittable 
-DoFns in Python" of the Beam Summit 2022:
-* https://2022.beamsummit.org/sessions/splittable-dofns-in-python/
+This repository contains the code samples and exercises used for the workshop **"Splittable DoFns in Python"** at **Beam Summit 2022**.
 
-There are two branches in this repo:
-* `main`: template to follow the workshop; write your code here.
-* `solution`: full solutions provided in this branch. Check only after you have tried to write your own code.
+## 🎥 Resources
 
-The slides used during the workshop are available [here](docs/slides.pdf).
+*   **Workshop Recording:** [Watch on YouTube](https://www.youtube.com/watch?v=kS5Fp82N-2k)
+*   **Presentation Slides:** [Download Slides (PDF)](docs/slides.pdf)
+*   **Official Session Page:** [Beam Summit 2022 Session](https://2022.beamsummit.org/sessions/splittable-dofns-in-python/)
 
-# Dependencies
+## 🌿 Repository Structure
 
-Check the `requirements.txt` file and install those dependencies before 
-trying to run the examples in this repo.
+This repository is organized into two main branches:
 
-You will need Python 3.10, 3.11, 3.12, or 3.13.
+*   [`main`](https://github.com/iht/splittable-dofns-python/tree/main): Template branch containing the exercises. **Start here** and write your code.
+*   [`solution`](https://github.com/iht/splittable-dofns-python/tree/solution): Reference branch containing the complete solutions. Use this to verify your work.
 
-If you want to use Kafka as well as the synthetic pipelines, you will need 
-to install minikube, or alternatively, provide a Kafka server of your own. 
-More details to install minikube and Kafka are given below.
+---
 
-# Synthetic pipelines
+## 🛠️ Setup & Dependencies
 
-There are two pipelines in this repo using synthetic data: one for a batch 
-example, and another one for a streaming example.
+1.  **Python Version:** Ensure you have Python 3.10, 3.11, 3.12, or 3.13 installed.
+2.  **Install Requirements:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Kafka (Optional):** To run the Kafka examples, you will need a running Kafka cluster. Instructions to set up a local Kafka cluster using Minikube are provided [below](#-running-kafka-locally-with-minikube).
 
-## Batch pipeline
+---
 
-To launch the batch pipeline, simply run 
+## 🚀 Running the Synthetic Pipelines
 
-`python my_batch_pipeline.py`
+These pipelines use synthetic data generators to demonstrate Splittable DoFns without external dependencies.
 
-The pipeline generates some pseudo-files, and reads the files by chunks 
-using a splittable DoFn. The code of the `DoFn` is in 
-`mydofns/synthetic_sdfn_batch.py`.
+### 1. Batch Pipeline
+Demonstrates reading files in parallel by chunks.
+*   **Run command:**
+    ```bash
+    python my_batch_pipeline.py
+    ```
+*   **Implementation file:** `mydofns/synthetic_sdfn_batch.py`
 
-If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
+### 2. Streaming Pipeline
+Demonstrates a streaming source with multiple partitions.
+*   **Run command:**
+    ```bash
+    python my_streaming_synth_pipeline.py
+    ```
+*   **Implementation file:** `mydofns/synthetic_sdfn_streaming.py`
+*   *Note: You can configure the number of partitions (default is 4) in `mydofns/synthetic_sdfn_streaming.py` (around line 62).*
 
-## Streaming pipeline
+---
 
-To launch the batch pipeline, simply run 
+## 🎡 Running the Kafka Pipelines
 
-`python my_streaming_synth_pipeline.py`
+To run these examples, you need to set up a Kafka cluster and populate a topic.
 
-In the file `mydofns/synthetic_sdfn_streaming.py`, in line 62, you can set 
-the number of partitions for this streaming synthetic connector. By default, it is `NUM_PARTITIONS = 4`.
+### 🐳 Running Kafka Locally with Minikube
 
-If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
+Follow these steps to set up Kafka in a local Minikube cluster:
 
-# Pipeline using Kafka
+1.  **Install Minikube:** Follow the [Minikube Start Guide](https://minikube.sigs.k8s.io/docs/start/).
+2.  **Configure Access:** Set up an alias for convenience:
+    ```bash
+    alias k=kubectl
+    ```
+3.  **Create Namespace:**
+    ```bash
+    k create namespace kafka
+    ```
+4.  **Install Strimzi Kafka Operator:**
+    ```bash
+    k create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+    ```
+5.  **Deploy Ephemeral Kafka Cluster:**
+    ```bash
+    k apply -f manifests/kafka-cluster.yaml -n kafka
+    ```
+6.  **Retrieve Kafka Bootstrap Server Details:**
+    *   Get Node Port:
+        ```bash
+        k get service my-cluster-kafka-external-bootstrap -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}' -n kafka
+        ```
+    *   Get Minikube IP:
+        ```bash
+        k get node minikube -o=jsonpath='{range .status.addresses[*]}{.type}{"\t"}{.address}{"\n"}'
+        ```
+    *   Define the bootstrap server environment variable (replace with your IP and Port):
+        ```bash
+        export BOOTSTRAP="<MINIKUBE_IP>:<NODE_PORT>"
+        ```
 
-Before you can use the pipeline with Kafka, you will need a Kafka server. In 
-the next section you have instructions to run Kafka locally with minikube.
+### 📝 Topic Creation & Data Population
 
-## Install Kafka
+Use the helper script `kafka_single_client.py` to manage the Kafka topic:
 
-If you want to test your code against an actual Kafka server, follow the 
-next steps to install Kafka in a local minikube cluster.
+1.  **Create Topic:**
+    ```bash
+    python kafka_single_client.py --bootstrap $BOOTSTRAP --create
+    ```
+2.  **Produce Test Data:**
+    ```bash
+    python kafka_single_client.py --bootstrap $BOOTSTRAP
+    ```
+3.  **Verify Data (Consume):**
+    ```bash
+    python kafka_single_client.py --consumer --bootstrap $BOOTSTRAP
+    ```
 
-* Install minikube: https://minikube.sigs.k8s.io/docs/start/
-* Make sure that you have an alias 
-  - `alias k=kubectl`
-* Create a namespace for Kafka: 
-  - `k create namespace kafka`
-* Install Kafka operator
-  - `k create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka`
-* Install single ephemeral cluster:
-  - `k apply -f manifests/kafka-cluster.yaml -n kafka`
-* Find out the port where Kafka is listening, and take note of it:
-  - `k get service my-cluster-kafka-external-bootstrap -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}' -n kafka`
-* Find out the local IP where Kafka is lesting, and take note of it:
-  - `k get node minikube -o=jsonpath='{range .status.addresses[*]}{.type}{"\t"}{.address}{"\n"}'`
+### 🏃 Running the Kafka Pipeline
 
-For your Kafka clients configuration, the bootstrap server will be `IP:PORT`.
-
-## Topic creation and population
-
-To test your pipeline against Kafka, you will need to write some data to 
-Kafka. For that, the first step is to create a topic.
-
-There is a Python script that can help you with the creation of the topic 
-and the population with data.
-
-Find out your bootstrap server details, and create an environment variable:
-
-`export BOOTSTRAP=192.168.64.3:31457`
-
-(in this example the IP is `192.168.64.3` and the port is `31457`; your details 
-will be  different, please  use the IP of your minikube cluster and the  
-port of your Kafka service, see above for more details)
-
-To create the topic, run
-
-`./kafka_single_client.py --bootstrap $BOOTSTRAP --create`
-
-And to populate with data
-
-`./kafka_single_client.py --bootstrap $BOOTSTRAP`
-
-If you want to check that the topic is working correctly, you can run a 
-consumer and check if there is data:
-
-`./kafka_single_client.py --consumer --bootstrap $BOOTSTRAP`
-
-## Pipeline using Kafka
-
-To run the pipeline, use this script. The number of partitions is by default 4. Make sure that if you change the
-number of partitions in `kafka_single_client.py`, you change it/use the same value in the Kafka `DoFn` too
-
-`python my_streaming_kafka_pipeline.py --bootstrap $BOOTSTRAP `
-
-The code of the `DoFn` functions is located in 
-`mydofns/kafka_sdfn_streaming.py`.
-
-If you are on the `main` branch, you need to write your solution for that splittable DoFn in that file. If you are on the `solution` branch, you will find the complete solution there.
+*   **Run command:**
+    ```bash
+    python my_streaming_kafka_pipeline.py --bootstrap $BOOTSTRAP
+    ```
+*   **Implementation file:** `mydofns/kafka_sdfn_streaming.py`
+*   *Note: Ensure the partition count matches the one used in `kafka_single_client.py`.*

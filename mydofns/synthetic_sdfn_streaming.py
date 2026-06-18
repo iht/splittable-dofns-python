@@ -23,7 +23,7 @@ class MyPartition:
     def poll(self) -> typing.Optional[int]:
         offset = self._committed_offset + 1
         if offset > self._last_offset:
-            return
+            return None
 
         return offset
 

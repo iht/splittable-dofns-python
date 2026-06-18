@@ -12,7 +12,7 @@ The slides used during the workshop are available [here](docs/slides.pdf).
 Check the `requirements.txt` file and install those dependencies before 
 trying to run the examples in this repo.
 
-You will need Python 3.7, 3.8 or 3.9. Other versions of Python will not work.
+You will need Python 3.10 or 3.11. Other versions of Python might not work.
 
 If you want to use Kafka as well as the synthetic pipelines, you will need 
 to install minikube, or alternatively, provide a Kafka server of your own. 

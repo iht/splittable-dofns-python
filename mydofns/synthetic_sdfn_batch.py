@@ -22,14 +22,20 @@ class GenerateFilesDoFn(beam.DoFn):
 
     def process(self, ignored_element, *args, **kwargs):
         for k in range(self.NUM_FILES):
-            yield MyFile(id=k, start=0, end=random.randint(self.MIN_FILE_SIZE, self.MAX_FILE_SIZE))
+            yield MyFile(
+                id=k,
+                start=0,
+                end=random.randint(self.MIN_FILE_SIZE, self.MAX_FILE_SIZE),
+            )
 
 
 class ProcessFilesSplittableDoFn(beam.DoFn, RestrictionProvider):
-    def process(self,
-                element: MyFile,
-                tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
-                **unused_kwargs) -> typing.Iterable[typing.Tuple[int, str]]:
+    def process(
+        self,
+        element: MyFile,
+        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
+        **unused_kwargs,
+    ) -> typing.Iterable[typing.Tuple[int, str]]:
         restriction: OffsetRange = tracker.current_restriction()
         for position in range(restriction.start, restriction.stop + 1):
             if tracker.try_claim(position):

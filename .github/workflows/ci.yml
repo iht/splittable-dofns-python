@@ -38,4 +38,5 @@ jobs:
       run: mypy .
 
     - name: Run batch pipeline (smoke test)
+      if: github.ref == 'refs/heads/solution' || github.base_ref == 'solution'
       run: python my_batch_pipeline.py

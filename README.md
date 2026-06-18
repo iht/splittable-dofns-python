@@ -5,7 +5,7 @@ This repository contains the code samples used for the workshop "Splittable
 DoFns in Python" of the Beam Summit 2022:
 * https://2022.beamsummit.org/sessions/splittable-dofns-in-python/
 
-The slides used during the workshop are available [here](https://github.com/iht/splittable-dofns-python/blob/main/docs/slides.pdf).
+The slides used during the workshop are available [here](docs/slides.pdf).
 
 # Dependencies
 

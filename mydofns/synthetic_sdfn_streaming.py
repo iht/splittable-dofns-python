@@ -84,11 +84,15 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
     MAX_EMPTY_POLLS = 10
 
     @beam.DoFn.unbounded_per_element()
-    def process(self,
-                element: MyPartition,
-                tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
-                wm_estim=beam.DoFn.WatermarkEstimatorParam(WalltimeWatermarkEstimator.default_provider()),
-                **unused_kwargs) -> typing.Iterable[typing.Tuple[int, str]]:
+    def process(
+        self,
+        element: MyPartition,
+        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
+        wm_estim=beam.DoFn.WatermarkEstimatorParam(
+            WalltimeWatermarkEstimator.default_provider()
+        ),
+        **unused_kwargs,
+    ) -> typing.Iterable[typing.Tuple[int, str]]:
         n_times_empty = 0
         while True:
             # Poll for new messages and process them
@@ -104,7 +108,9 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
 
             # If the partition is exhausted and starving, add more messages
             if n_times_empty > self.MAX_EMPTY_POLLS:
-                logging.info(f" ** Partition {element.id}: Waiting for too long. Adding more messages")
+                logging.info(
+                    f" ** Partition {element.id}: Waiting for too long. Adding more messages"
+                )
                 self._add_new_messages(element)
                 n_times_empty = 0
             # Every once in a while (with probability PROB_NEW_MSGS), the partition will get new msgs, even if it
@@ -116,7 +122,9 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
             time.sleep(self.POLL_TIMEOUT)
 
     def _add_new_messages(self, element: MyPartition):
-        element.add_new_messages(random.randint(self.MIN_ADD_NEW_MSGS, self.MAX_ADD_NEW_MSGS))
+        element.add_new_messages(
+            random.randint(self.MIN_ADD_NEW_MSGS, self.MAX_ADD_NEW_MSGS)
+        )
 
     def create_tracker(self, restriction: OffsetRange) -> MyPartitionRestrictionTracker:
         # TODO: create a tracker here

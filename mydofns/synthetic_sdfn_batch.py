@@ -20,7 +20,7 @@ class GenerateFilesDoFn(beam.DoFn):
     MAX_FILE_SIZE = 30
     MIN_FILE_SIZE = 2
 
-    def process(self, ignored_element, *args, **kwargs):
+    def process(self, element, *args, **kwargs):
         for k in range(self.NUM_FILES):
             yield MyFile(
                 id=k,

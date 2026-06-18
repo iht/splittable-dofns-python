@@ -63,7 +63,7 @@ class GeneratePartitionsDoFn(beam.DoFn, ABC):
     INITIAL_MAX_SIZE = 120
     MAX_INITIAL_COMMITTED = 20
 
-    def process(self, ignored_element, *args, **kwargs):
+    def process(self, element, *args, **kwargs):
         for k in range(self.NUM_PARTITIONS):
             committed_offset = random.randint(0, self.MAX_INITIAL_COMMITTED)
             yield MyPartition(

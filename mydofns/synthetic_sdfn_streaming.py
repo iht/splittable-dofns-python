@@ -87,7 +87,7 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
     def process(
         self,
         element: MyPartition,
-        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
+        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),  # type: ignore[assignment]
         wm_estim=beam.DoFn.WatermarkEstimatorParam(
             WalltimeWatermarkEstimator.default_provider()
         ),

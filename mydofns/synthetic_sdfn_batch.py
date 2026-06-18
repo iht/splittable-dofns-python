@@ -33,7 +33,7 @@ class ProcessFilesSplittableDoFn(beam.DoFn, RestrictionProvider):
     def process(
         self,
         element: MyFile,
-        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),
+        tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),  # type: ignore[assignment]
         **unused_kwargs,
     ) -> typing.Iterable[typing.Tuple[int, str]]:
         restriction: OffsetRange = tracker.current_restriction()

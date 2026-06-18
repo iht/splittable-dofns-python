@@ -34,7 +34,7 @@ class ReadPartitionsDoFn(beam.DoFn):
 
     def process(self, unused_element: int, *args, **kwargs) -> typing.Iterable[int]:
         # TODO: return the ids of the partitions contained in this topic
-        pass
+        raise NotImplementedError()
 
 
 class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
@@ -72,19 +72,19 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
             self._create_consumer(partition)
 
         # TODO: Implement a while loop to poll Kafka and process any new message in the partition
-        pass
+        raise NotImplementedError()
 
     def create_tracker(self, restriction: OffsetRange) -> MyPartitionRestrictionTracker:
         # TODO: create the restriction tracker
-        pass
+        raise NotImplementedError()
 
     def initial_restriction(self, partition: int) -> OffsetRange:
         if self._kafka_client is None:
             self._create_consumer(partition)
 
         # TODO: Find the latest committed offset, and create a range from that to "infinity"
-        pass
+        raise NotImplementedError()
 
     def restriction_size(self, element: int, restriction: OffsetRange):
         # TODO: return the size of the current partition
-        pass
+        raise NotImplementedError()

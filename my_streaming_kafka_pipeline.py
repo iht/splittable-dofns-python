@@ -4,7 +4,7 @@ import logging
 from apache_beam import PCollection
 from apache_beam.options.pipeline_options import PipelineOptions
 
-from typing import List
+
 import apache_beam as beam
 
 from mydofns.kafka_sdfn_streaming import ReadPartitionsDoFn, ProcessKafkaPartitionsDoFn
@@ -12,7 +12,7 @@ from mydofns.kafka_sdfn_streaming import ReadPartitionsDoFn, ProcessKafkaPartiti
 TOPIC = "beam-topic"
 
 
-def run_pipeline(topic: str, bootstrap_server: List[str], beam_options):
+def run_pipeline(topic: str, bootstrap_server: str, beam_options):
     pipeline_options: PipelineOptions = PipelineOptions(beam_options)
 
     with beam.Pipeline(options=pipeline_options) as p:

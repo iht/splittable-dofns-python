@@ -24,7 +24,7 @@ class MyPartition:
         """Get new messages from this topic and partition."""
         offset = self._committed_offset + 1
         if offset > self._last_offset:
-            return
+            return None
 
         return offset
 
@@ -73,7 +73,7 @@ class GeneratePartitionsDoFn(beam.DoFn):
         # TODO
         # Calculate a random latest committed offset, between 0 and MAX_INITIAL_COMMITTED.
         # Then emit NUM_PARTIIONS partitions, with the last offset between the above number and INITIAL_MAX_SIZE
-        pass
+        raise NotImplementedError()
 
 
 class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
@@ -128,12 +128,12 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider):
 
     def create_tracker(self, restriction: OffsetRange) -> MyPartitionRestrictionTracker:
         # TODO: create a tracker here
-        pass
+        raise NotImplementedError()
 
     def initial_restriction(self, element: MyPartition) -> OffsetRange:
         # TODO: what's the initial restriction for a Kafka partition?
-        pass
+        raise NotImplementedError()
 
     def restriction_size(self, element: MyPartition, restriction: OffsetRange) -> int:
         # TODO: what's the size of this partition?
-        pass
+        raise NotImplementedError()

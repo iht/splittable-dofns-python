@@ -19,7 +19,7 @@ class GenerateFilesDoFn(beam.DoFn):
 
     def process(self, ignored_element, *args, **kwargs) -> typing.Iterable[MyFile]:
         # TODO: create NUM_FILES of random size between MIN_FILE_SIZE and MAX_FILE_SIZE
-        pass
+        raise NotImplementedError()
 
 
 class ProcessFilesSplittableDoFn(beam.DoFn, RestrictionProvider):

@@ -4,7 +4,7 @@
     "config:recommended"
   ],
   "baseBranchPatterns": [
-    "^main$",
-    "^solution$"
+    "main",
+    "solution"
   ]
 }

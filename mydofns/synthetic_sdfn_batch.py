@@ -1,8 +1,7 @@
 import random
-
-import apache_beam as beam
 import typing
 
+import apache_beam as beam
 from apache_beam import RestrictionProvider
 
 

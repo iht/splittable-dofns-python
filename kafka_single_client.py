@@ -3,7 +3,7 @@
 import argparse
 import time
 
-from kafka import KafkaProducer, KafkaConsumer, TopicPartition
+from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 from kafka.admin import KafkaAdminClient, NewTopic
 
 DATA_FILE = "data/sample.txt"

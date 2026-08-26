@@ -10,7 +10,7 @@ from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
-from kafka import KafkaConsumer, TopicPartition, OffsetAndMetadata
+from kafka import KafkaConsumer, OffsetAndMetadata, TopicPartition
 from kafka.consumer.fetcher import ConsumerRecord
 
 from mydofns.synthetic_sdfn_streaming import MyPartitionRestrictionTracker
@@ -22,7 +22,7 @@ class ReadPartitionsDoFn(beam.DoFn):
     ):
         self._topic = topic
         self._bootstrap = bootstrap_server
-        self._kafka_client: Optional[KafkaConsumer] = None
+        self._kafka_client: KafkaConsumer | None = None
         super().__init__(*unused_args, **unused_kwargs)
 
     def setup(self):
@@ -45,7 +45,7 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
     ):
         self._topic = topic
         self._bootstrap = bootstrap_server
-        self._kafka_client: Optional[KafkaConsumer] = None
+        self._kafka_client: KafkaConsumer | None = None
         super().__init__(*unused_args, **unused_kwargs)
 
     def _create_consumer(self, partition):

@@ -1,15 +1,15 @@
 import argparse
 import logging
 
+import apache_beam as beam
 from apache_beam import PCollection
 from apache_beam.options.pipeline_options import PipelineOptions
 
-
-import apache_beam as beam
-
-from mydofns.kafka_sdfn_streaming import ReadPartitionsDoFn, ProcessKafkaPartitionsDoFn
+from mydofns.kafka_sdfn_streaming import ProcessKafkaPartitionsDoFn, ReadPartitionsDoFn
 
 TOPIC = "beam-topic"
+
+logger = logging.getLogger(__name__)
 
 
 def run_pipeline(topic: str, bootstrap_server: str, beam_options):
@@ -27,7 +27,7 @@ def run_pipeline(topic: str, bootstrap_server: str, beam_options):
             ProcessKafkaPartitionsDoFn(topic, bootstrap_server)
         )
 
-        msgs | beam.Map(lambda x: logging.info(x))
+        msgs | beam.Map(lambda x: logger.info(x))
 
 
 if __name__ == "__main__":

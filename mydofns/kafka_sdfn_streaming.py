@@ -11,10 +11,12 @@ from apache_beam.io.restriction_trackers import OffsetRange
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
 from apache_beam.utils.timestamp import Duration
-from kafka import KafkaConsumer, TopicPartition, OffsetAndMetadata
+from kafka import KafkaConsumer, OffsetAndMetadata, TopicPartition
 from kafka.consumer.fetcher import ConsumerRecord
 
 from mydofns.synthetic_sdfn_streaming import MyPartitionRestrictionTracker
+
+logger = logging.getLogger(__name__)
 
 
 class ReadPartitionsDoFn(beam.DoFn):
@@ -23,7 +25,7 @@ class ReadPartitionsDoFn(beam.DoFn):
     ):
         self._topic = topic
         self._bootstrap = bootstrap_server
-        self._kafka_client: Optional[KafkaConsumer] = None
+        self._kafka_client: KafkaConsumer | None = None
         super().__init__(*unused_args, **unused_kwargs)
 
     def setup(self):
@@ -36,8 +38,7 @@ class ReadPartitionsDoFn(beam.DoFn):
     def process(self, element, *args, **kwargs):
         assert self._kafka_client is not None
         partitions = self._kafka_client.partitions_for_topic(self._topic)
-        for partition in partitions:
-            yield partition
+        yield from partitions
 
 
 class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
@@ -48,7 +49,7 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
     ):
         self._topic = topic
         self._bootstrap = bootstrap_server
-        self._kafka_clients: typing.Dict = {}
+        self._kafka_clients: dict = {}
         super().__init__(*unused_args, **unused_kwargs)
 
     def _create_and_get_consumer(self, partition):
@@ -56,7 +57,7 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
 
         client = None
 
-        if tp in self._kafka_clients.keys():
+        if tp in self._kafka_clients:
             client = self._kafka_clients[tp]
         else:
             client = KafkaConsumer(
@@ -85,11 +86,11 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
 
         tp = TopicPartition(topic=self._topic, partition=partition)
 
-        offset_to_process: typing.Dict = kafka_client.poll()
+        offset_to_process: dict = kafka_client.poll()
         last_offset = kafka_client.end_offsets([tp])[tp]
         last_seen_offset = kafka_client.committed(tp)
         if offset_to_process != {}:
-            all_records: typing.List[ConsumerRecord] = offset_to_process[tp]
+            all_records: list[ConsumerRecord] = offset_to_process[tp]
 
             for record in all_records:
                 offset = record.offset
@@ -101,7 +102,7 @@ class ProcessKafkaPartitionsDoFn(beam.DoFn, RestrictionProvider):
                 else:
                     return
         else:
-            logging.info(
+            logger.info(
                 f" ** Partition {partition}: Empty (offset last: {last_offset}, initial: {last_seen_offset})"
             )
 

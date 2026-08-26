@@ -6,8 +6,8 @@ from apache_beam import PCollection
 from apache_beam.options.pipeline_options import PipelineOptions
 
 from mydofns.synthetic_sdfn_batch import (
-    MyFile,
     GenerateFilesDoFn,
+    MyFile,
     ProcessFilesSplittableDoFn,
 )
 

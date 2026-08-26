@@ -1,17 +1,18 @@
 import logging
 import random
 import sys
+import typing
 from abc import ABC
 
 import apache_beam as beam
-import typing
-
 from apache_beam import RestrictionProvider
 from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange, OffsetRestrictionTracker
 from apache_beam.io.watermark_estimators import WalltimeWatermarkEstimator
 from apache_beam.runners.sdf_utils import RestrictionTrackerView
 from apache_beam.utils.timestamp import Duration
+
+logger = logging.getLogger(__name__)
 
 
 class MyPartition:
@@ -20,7 +21,7 @@ class MyPartition:
         self._last_offset = last_offset
         self._committed_offset = committed_offset
 
-    def poll(self) -> typing.Optional[int]:
+    def poll(self) -> int | None:
         offset = self._committed_offset + 1
         if offset > self._last_offset:
             return None
@@ -89,7 +90,7 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
             WalltimeWatermarkEstimator.default_provider()
         ),
         **unused_kwargs,
-    ) -> typing.Iterable[typing.Tuple[int, str]]:
+    ) -> typing.Iterable[tuple[int, str]]:
         n_times_empty = 0
 
         offset_to_process = element.poll()
@@ -103,17 +104,17 @@ class ProcessPartitionsSplittableDoFn(beam.DoFn, RestrictionProvider, ABC):
 
         # Code to add more messages to simulate real word scenarios
         if offset_to_process is None:
-            logging.info(f" ** Partition {element.id}: Empty poll. Waiting")
+            logger.info(f" ** Partition {element.id}: Empty poll. Waiting")
             n_times_empty += 1
 
         if n_times_empty > self.MAX_EMPTY_POLLS:
-            logging.info(
+            logger.info(
                 f" ** Partition {element.id}: Waiting for too long. Adding more messages"
             )
             self._add_new_messages(element)
             n_times_empty = 0
         elif random.random() <= self.PROB_NEW_MSGS:
-            logging.info(f" ** Partition {element.id}: Bingo! Adding more messages")
+            logger.info(f" ** Partition {element.id}: Bingo! Adding more messages")
             self._add_new_messages(element)
 
         tracker.defer_remainder(Duration.of(self.POLL_TIMEOUT))

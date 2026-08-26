@@ -1,8 +1,7 @@
 import random
-
-import apache_beam as beam
 import typing
 
+import apache_beam as beam
 from apache_beam import RestrictionProvider
 from apache_beam.io.iobase import RestrictionTracker
 from apache_beam.io.restriction_trackers import OffsetRange, OffsetRestrictionTracker
@@ -35,7 +34,7 @@ class ProcessFilesSplittableDoFn(beam.DoFn, RestrictionProvider):
         element: MyFile,
         tracker: RestrictionTrackerView = beam.DoFn.RestrictionParam(),  # type: ignore[assignment]
         **unused_kwargs,
-    ) -> typing.Iterable[typing.Tuple[int, str]]:
+    ) -> typing.Iterable[tuple[int, str]]:
         restriction: OffsetRange = tracker.current_restriction()
         for position in range(restriction.start, restriction.stop + 1):
             if tracker.try_claim(position):

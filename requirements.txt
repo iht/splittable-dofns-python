@@ -1,2 +1,2 @@
-apache-beam[gcp]==2.74.0
+apache-beam[gcp]==2.75.0
 kafka-python==3.0.7
